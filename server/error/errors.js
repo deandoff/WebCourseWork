@@ -6,7 +6,7 @@ class Errors extends Error {
     }
 
     static badRequest(message) {
-        return new Errors(message, 404);
+        return new Errors(message, 400);
     }
 
     static internal(message) {
@@ -15,6 +15,14 @@ class Errors extends Error {
 
     static forbidden(message) {
         return new Errors(message, 403);
+    }
+
+    static unauthorized(message) {
+        return new Errors(message, 401);
+    }
+
+    static notFound(message) {
+        return new Errors(message, 404);
     }
 }
 

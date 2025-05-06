@@ -1,11 +1,20 @@
 const {User} = require('../models/models')
 const Errors = require('../error/errors')
+const bcrypt = require('bcrypt')
 
 class UserManagementController {
     async createUser(req, res) {
         const {username, password, fullname, email, role} = req.body
-        const newUser = await User.create({username, password, fullname, email, role})
-        return res.json(newUser)
+        if (!username || !password || !fullname || !email || !role) {
+            return res.status(400).json({message: 'All fields are required'})
+        }
+        const candidate = await User.findOne({where: {username}})
+        if (candidate) {
+            return res.status(400).json({message: 'User already exists'})
+        }
+        const hashPassword = await bcrypt.hash(password, 5)
+        const user = await User.create({username, password: hashPassword, fullname, email, role})
+        return res.json(user)
     }
 
     async deleteUser(req, res) {
