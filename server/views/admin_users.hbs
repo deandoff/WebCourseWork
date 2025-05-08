@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Управление пользователями</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    .edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .edit-form .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .edit-form .form-group label {
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+
+    .edit-form input,
+    .edit-form select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .edit-form .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .edit-form .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .edit-form .btn.save {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .edit-form .btn.cancel {
+      background-color: #f44336;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Управление пользователями</h2>
+
+  <button onclick="openCreateUserForm()" class="btn save" style="margin-bottom: 10px;">Создать пользователя</button>
+
+
+  <table class="user-table">
+    <thead>
+      <tr>
+        <th>Имя</th>
+        <th>Email</th>
+        <th>Роль</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody id="userTableBody">
+      {{#each users}}
+        <tr data-user-id="{{this.id}}">
+          <td>{{this.fullname}}</td>
+          <td>{{this.email}}</td>
+          <td>{{this.role}}</td>
+          <td class="action-buttons">
+            <button class="edit" onclick="openInlineEditForm(this, {{this.id}}, '{{this.fullname}}', '{{this.email}}', '{{this.role}}')">Изменить</button>
+            <button class="delete" onclick="deleteUser({{this.id}})">Удалить</button>
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function openInlineEditForm(button, id, fullname, email, role) {
+    cancelInlineEdit();
+
+    const username = email.split('@')[0];
+
+    const formRow = `
+      <tr class="inline-edit-row">
+        <td colspan="4">
+          <form id="inlineEditForm" class="edit-form">
+            <input type="hidden" name="id" value="${id}">
+            
+            <div class="form-group">
+              <label>ФИО</label>
+              <input type="text" name="fullname" value="${fullname}" required>
+            </div>
+
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" name="email" value="${email}" required>
+            </div>
+
+            <div class="form-group">
+              <label>Логин</label>
+              <input type="text" name="username" value="${username}" required>
+            </div>
+
+            <div class="form-group">
+              <label>Роль</label>
+              <select name="role" required>
+                <option value="STUDENT" ${role === 'STUDENT' ? 'selected' : ''}>Студент</option>
+                <option value="ADMIN" ${role === 'ADMIN' ? 'selected' : ''}>Администратор</option>
+                <option value="TEACHER" ${role === 'TEACHER' ? 'selected' : ''}>Преподаватель</option>
+                <option value="DEANARY" ${role === 'DEANARY' ? 'selected' : ''}>Деканат</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Новый пароль (опционально)</label>
+              <input type="password" name="password" placeholder="Новый пароль">
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn save">Сохранить</button>
+              <button type="button" class="btn cancel" onclick="cancelInlineEdit()">Назад</button>
+            </div>
+          </form>
+        </td>
+      </tr>
+    `;
+
+    $(button).closest('tr').after(formRow);
+
+    $('#inlineEditForm').on('submit', function (e) {
+      e.preventDefault();
+      const formData = $(this).serialize();
+
+        $.ajax({
+        url: '/admin/update',
+        method: 'PUT',
+        data: formData,
+        success: function (response) {
+            alert('Пользователь обновлён');
+            location.reload();
+        },
+        error: function (xhr) {
+            alert('Ошибка при обновлении пользователя: ' + xhr.responseText);
+        }
+        });
+    });
+  }
+
+  function cancelInlineEdit() {
+    $('.inline-edit-row').remove();
+  }
+
+  function openCreateUserForm() {
+  cancelInlineEdit();
+
+  const formRow = `
+    <tr class="inline-edit-row">
+      <td colspan="4">
+        <form id="createUserForm" class="edit-form">
+          <div class="form-group">
+            <label>ФИО</label>
+            <input type="text" name="fullname" required>
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" required>
+          </div>
+
+          <div class="form-group">
+            <label>Логин</label>
+            <input type="text" name="username" required>
+          </div>
+
+          <div class="form-group">
+            <label>Роль</label>
+            <select name="role" required>
+              <option value="">Выберите роль</option>
+              <option value="STUDENT">Студент</option>
+              <option value="ADMIN">Администратор</option>
+              <option value="TEACHER">Преподаватель</option>
+              <option value="DEANARY">Деканат</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" name="password" required>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn save">Создать</button>
+            <button type="button" class="btn cancel" onclick="cancelInlineEdit()">Отмена</button>
+          </div>
+        </form>
+      </td>
+    </tr>
+  `;
+
+  $('#userTableBody').prepend(formRow);
+
+  $('#createUserForm').on('submit', function (e) {
+    e.preventDefault();
+    const formData = $(this).serialize();
+
+    $.ajax({
+      url: '/admin/create',
+      method: 'POST',
+      data: formData,
+      success: function (response) {
+        alert('Пользователь создан');
+        location.reload();
+      },
+      error: function (xhr) {
+        alert('Ошибка при создании пользователя: ' + xhr.responseText);
+      }
+    });
+  });
+}
+
+function deleteUser(id) {
+  const confirmation = confirm("Вы уверены, что хотите удалить этого пользователя?");
+  if (!confirmation) return;
+
+  $.ajax({
+    url: `/admin/delete/${id}`,
+    method: 'DELETE',
+    success: function (response) {
+      alert('Пользователь удалён');
+      $(`tr[data-user-id="${id}"]`).remove(); // Удаляем строку из таблицы
+    },
+    error: function (xhr) {
+      alert('Ошибка при удалении пользователя: ' + xhr.responseText);
+    }
+  });
+}
+
+</script>
+</body>
+</html>

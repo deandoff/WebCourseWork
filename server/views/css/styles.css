@@ -1,0 +1,141 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    max-width: 1000px;
+    margin: 40px auto;
+    background-color: #fff;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+  }
+  
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+  }
+
+  h3 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+  }
+  
+  .user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .user-table th,
+  .user-table td {
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    text-align: left;
+  }
+  
+  .user-table th {
+    background-color: #f0f0f0;
+    color: #444;
+    font-weight: 600;
+  }
+  
+  .user-table tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .action-buttons form {
+    display: inline;
+  }
+  
+  button {
+    padding: 8px 14px;
+    font-size: 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  button.edit {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  button.edit:hover {
+    background-color: #2980b9;
+  }
+  
+  button.delete {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  button.delete:hover {
+    background-color: #c0392b;
+  }
+  
+  .center {
+    text-align: center;
+  }
+  
+  .role {
+    font-size: 18px;
+    margin-bottom: 30px;
+    color: #555;
+  }
+  
+  .logout {
+    background-color: #636e72;
+    color: white;
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+  }
+
+
+  .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .btn {
+    background-color: #0984e3;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+    border: none;
+    display: inline-block;
+  }
+  
+  .btn:hover {
+    background-color: #74b9ff;
+    cursor: pointer;
+  }
+  
+  .logout {
+    background-color: #d63031;
+  }
+  
+  .logout:hover {
+    background-color: #ff7675;
+  }
+  
+  

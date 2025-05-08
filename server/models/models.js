@@ -23,12 +23,6 @@ const Classroom = sequelize.define('classroom', {
     building: {type: DataTypes.INTEGER},
 })
 
-const Subject = sequelize.define('subject', {
-    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    name: {type: DataTypes.STRING},
-    type: {type: DataTypes.STRING},
-})
-
 const StudentGroup = sequelize.define('student_group', {
     student_id: {type: DataTypes.INTEGER},
     group_id: {type: DataTypes.INTEGER},
@@ -36,7 +30,8 @@ const StudentGroup = sequelize.define('student_group', {
 
 const Schedule = sequelize.define('schedule', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    subject_id: {type: DataTypes.INTEGER},
+    subject_name: {type: DataTypes.STRING},
+    subject_type: {type: DataTypes.STRING},
     teacher_id: {type: DataTypes.INTEGER},
     group_id: {type: DataTypes.INTEGER},
     classroom_id: {type: DataTypes.INTEGER},
@@ -45,29 +40,19 @@ const Schedule = sequelize.define('schedule', {
     end_time: {type: DataTypes.TIME},
 })
 
-Schedule.hasMany(User)
-User.belongsTo(Schedule)
+Schedule.belongsTo(User, { foreignKey: 'teacher_id' });
+User.hasMany(Schedule, { foreignKey: 'teacher_id' });
 
-Schedule.hasMany(Group)
-Group.belongsTo(Schedule)
+Schedule.belongsTo(Group, { foreignKey: 'group_id' });
+Group.hasMany(Schedule, { foreignKey: 'group_id' });
 
-Schedule.hasMany(Classroom)
-Classroom.belongsTo(Schedule)
-
-Schedule.hasMany(Subject)
-Subject.belongsTo(Schedule)
-
-StudentGroup.hasMany(User)
-User.belongsTo(StudentGroup)
-
-StudentGroup.hasMany(Group)
-Group.belongsTo(StudentGroup)
+Schedule.belongsTo(Classroom, { foreignKey: 'classroom_id' });
+Classroom.hasMany(Schedule, { foreignKey: 'classroom_id' });
 
 module.exports = {
     User,
     Group,
     Classroom,
-    Subject,
     StudentGroup,
     Schedule
 }

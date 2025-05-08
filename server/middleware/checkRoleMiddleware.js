@@ -8,7 +8,7 @@ module.exports = function (role) {
             next()
         }
         try {
-            const token = req.headers.authorization.split(' ')[1]
+            const token = req.cookies.token;
             if (!token) {
                 return next(Errors.unauthorized('Unathorized'))
             }

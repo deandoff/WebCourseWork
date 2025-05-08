@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Управление группами и студентами</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    .edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .edit-form .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .edit-form .form-group label {
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+
+    .edit-form input,
+    .edit-form select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .edit-form .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .edit-form .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .edit-form .btn.save {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .edit-form .btn.cancel {
+      background-color: #f44336;
+      color: white;
+    }
+
+    /* Стиль для студентов */
+    .student-list {
+      margin-left: 20px;
+      display: none;
+    }
+    
+    .student-list.active {
+      display: block;
+    }
+
+    .toggle-button {
+      cursor: pointer;
+      color: #007bff;
+      background: none;
+      border: none;
+      text-decoration: underline;
+    }
+
+  .student-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  .student-table th, .student-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ccc;
+    word-wrap: break-word;
+  }
+
+  .student-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+
+  .student-table td button {
+    padding: 6px 12px;
+    margin: 4px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: #f44336;
+    color: white;
+  }
+
+  .student-table td button:hover {
+    background-color: #d32f2f;
+  }
+
+  .student-table-container {
+    max-height: 400px; /* Ограничение по высоте для длинных списков */
+    overflow-y: auto; /* Добавить вертикальную прокрутку */
+  }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Управление группами и студентами</h2>
+
+  <!-- Форма для создания группы -->
+  <button onclick="openCreateGroupForm()" class="btn save" style="margin-bottom: 10px;">Создать группу</button>
+
+    <!-- Таблица для отображения групп -->
+    <table class="group-table">
+    <thead>
+        <tr>
+        <th>Название группы</th>
+        <th>Курс</th>
+        <th>Студенты</th>
+        <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody id="groupTableBody">
+        {{#each groups}}
+        <tr data-group-id="{{this.id}}">
+            <td>{{this.name}}</td>
+            <td>{{this.course}}</td>
+            <td><button onclick="viewStudentsInGroup({{this.id}})">Посмотреть студентов</button></td>
+            <td class="action-buttons">
+            <button class="edit" onclick="openEditGroupForm(this, {{this.id}}, '{{this.name}}', {{this.course}})">Изменить</button>
+            <button class="add-student" onclick="showAddStudentForm({{this.id}})">Добавить студента</button>
+            <button class="delete" onclick="deleteGroup({{this.id}})">Удалить</button>
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+    </table>
+
+
+  <!-- Формы для редактирования группы и добавления студента в группу -->
+  <div id="studentFormContainer"></div>
+
+</div>
+
+<script>
+  // Открыть форму создания группы
+  function openCreateGroupForm() {
+    cancelInlineEdit();
+
+    const formRow = `
+      <tr class="inline-edit-row">
+        <td colspan="4">
+          <form id="createGroupForm" class="edit-form">
+            <div class="form-group">
+              <label>Название группы</label>
+              <input type="text" name="name" required>
+            </div>
+
+            <div class="form-group">
+              <label>Курс</label>
+              <input type="number" name="course" required>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn save">Создать</button>
+              <button type="button" class="btn cancel" onclick="cancelInlineEdit()">Отмена</button>
+            </div>
+          </form>
+        </td>
+      </tr>
+    `;
+
+    $('#groupTableBody').prepend(formRow);
+
+    $('#createGroupForm').on('submit', function (e) {
+      e.preventDefault();
+      const formData = $(this).serialize();
+
+      $.ajax({
+        url: '/deanary/groups/create',
+        method: 'POST',
+        data: formData,
+        success: function (response) {
+          alert('Группа создана');
+          location.reload();
+        },
+        error: function (xhr) {
+          alert('Ошибка при создании группы: ' + xhr.responseText);
+        }
+      });
+    });
+  }
+
+  // Открыть форму редактирования группы
+  function openEditGroupForm(button, id, name, course) {
+    cancelInlineEdit();
+
+    const formRow = `
+      <tr class="inline-edit-row">
+        <td colspan="4">
+          <form id="editGroupForm" class="edit-form">
+            <input type="hidden" name="id" value="${id}">
+            
+            <div class="form-group">
+              <label>Название группы</label>
+              <input type="text" name="name" value="${name}" required>
+            </div>
+
+            <div class="form-group">
+              <label>Курс</label>
+              <input type="number" name="course" value="${course}" required>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn save">Сохранить</button>
+              <button type="button" class="btn cancel" onclick="cancelInlineEdit()">Назад</button>
+            </div>
+          </form>
+        </td>
+      </tr>
+    `;
+
+    $(button).closest('tr').after(formRow);
+
+    $('#editGroupForm').on('submit', function (e) {
+      e.preventDefault();
+      const formData = $(this).serialize();
+
+      $.ajax({
+        url: '/admin/group/update',
+        method: 'PUT',
+        data: formData,
+        success: function (response) {
+          alert('Группа обновлена');
+          location.reload();
+        },
+        error: function (xhr) {
+          alert('Ошибка при обновлении группы: ' + xhr.responseText);
+        }
+      });
+    });
+  }
+
+  // Отмена редактирования/создания
+  function cancelInlineEdit() {
+    $('.inline-edit-row').remove();
+  }
+
+  // Удалить группу
+  function deleteGroup(id) {
+    const confirmation = confirm("Вы уверены, что хотите удалить эту группу?");
+    if (!confirmation) return;
+
+    $.ajax({
+      url: `/admin/group/delete/${id}`,
+      method: 'DELETE',
+      success: function (response) {
+        alert('Группа удалена');
+        $(`tr[data-group-id="${id}"]`).remove();
+      },
+      error: function (xhr) {
+        alert('Ошибка при удалении группы: ' + xhr.responseText);
+      }
+    });
+  }
+
+  // Функция для отображения формы добавления студента в группу
+  function showAddStudentForm(groupId) {
+    console.log("Попытка загрузить студентов без группы для groupId:", groupId);
+
+    $.ajax({
+      url: '/deanary/groups/no-group',
+      method: 'GET',
+      success: function (students) {
+        console.log("Ответ от сервера получен:", students);
+
+        if (!Array.isArray(students)) {
+          console.error("Ожидался массив студентов, но получено:", students);
+          alert('Ошибка: сервер вернул некорректные данные');
+          return;
+        }
+
+        if (students.length === 0) {
+          console.log("Нет студентов без группы");
+          alert("Нет студентов без группы для добавления");
+          return;
+        }
+
+        const studentSelectOptions = students.map(student => `
+          <option value="${student.id}">${student.fullname}</option>
+        `).join('');
+
+        const addStudentForm = `
+          <div class="edit-form">
+            <h3>Добавить студента в группу</h3>
+            <form id="addStudentToGroupForm">
+              <div class="form-group">
+                <label>Выберите студента</label>
+                <select name="student_id" required>
+                  ${studentSelectOptions}
+                </select>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn save">Добавить студента</button>
+                <button type="button" class="btn cancel" onclick="cancelInlineEdit()">Отмена</button>
+              </div>
+            </form>
+          </div>
+        `;
+
+        $('#studentFormContainer').html(addStudentForm);
+        console.log("Форма добавления студента успешно отрисована");
+
+        $('#addStudentToGroupForm').on('submit', function(e) {
+          e.preventDefault();
+
+          const studentId = $(this).find('select[name="student_id"]').val();
+          console.log(`Попытка добавить студента ${studentId} в группу ${groupId}`);
+
+          $.ajax({
+            url: '/deanary/groups/add-student',
+            method: 'POST',
+            data: { group_id: groupId, student_id: studentId },
+            success: function(response) {
+              console.log("Студент успешно добавлен:", response);
+              alert('Студент добавлен в группу');
+              location.reload();
+            },
+            error: function(xhr) {
+              console.error("Ошибка при добавлении студента:", xhr.responseText);
+              alert('Ошибка при добавлении студента: ' + xhr.responseText);
+            }
+          });
+        });
+      },
+      error: function(xhr, status, error) {
+        console.error("Ошибка при получении студентов без группы:", error);
+        alert('Ошибка при загрузке студентов: ' + error);
+      }
+    });
+  }
+
+  // Просмотр студентов в группе
+  // Функция для отображения студентов в группе
+// Функция для отображения студентов в группе
+function viewStudentsInGroup(groupId) {
+    // Проверим, не открыт ли уже список студентов для этой группы
+    const existingTable = $(`#studentsTable-${groupId}`);
+    if (existingTable.length > 0) {
+        // Если таблица уже отображается, скрыть её
+        existingTable.toggle();
+        return;
+    }
+
+    $.ajax({
+        url: `/deanary/groups/${groupId}`,
+        method: 'GET',
+        success: function (students) {
+            if (!students.length) {
+                alert('Нет студентов в группе');
+                return;
+            }
+
+            let studentList = students.map(student => `
+                <tr>
+                    <td>${student.fullname}</td>
+                    <td>${student.email}</td>
+                    <td><button onclick="removeStudentFromGroup(${student.id}, ${groupId})">Удалить</button></td>
+                </tr>
+            `).join('');
+
+            const studentTable = `
+                <tr id="studentsTable-${groupId}">
+                    <td colspan="4">
+                        <div class="student-table-container">
+                            <table class="student-table">
+                                <thead>
+                                    <tr>
+                                        <th>Студент</th>
+                                        <th>Email</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${studentList}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            // Вставляем таблицу студентов непосредственно после строки с группой
+            $(`tr[data-group-id="${groupId}"]`).after(studentTable);
+        },
+        error: function (xhr, status, error) {
+            alert('Ошибка при загрузке студентов: ' + error);
+        }
+    });
+}
+
+// Функция для сворачивания/разворачивания списка студентов
+function toggleStudentsTable(groupId) {
+    $(`#studentsTable-${groupId}`).toggle();
+}
+
+
+
+  // Удалить студента из группы
+  function removeStudentFromGroup(studentId, groupId) {
+    $.ajax({
+      url: '/deanary/groups/remove-student',
+      method: 'DELETE',
+      data: { student_id: studentId },
+      success: function (response) {
+        alert('Студент удалён из группы');
+        location.reload();
+      },
+      error: function (xhr) {
+        alert('Ошибка при удалении студента из группы: ' + xhr.responseText);
+      }
+    });
+  }
+</script>
+</body>
+</html>

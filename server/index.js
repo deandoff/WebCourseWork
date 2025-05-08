@@ -15,12 +15,21 @@ const app = express()
 
 app.set('view engine', 'hbs')
 app.set('views', 'views')
+app.use(express.static(path.join(__dirname, 'views')));
+
+hbs.registerHelper('eq', function (a, b) {
+  return a === b;
+});
 
 app.use(cookieParser());
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 app.use('/', router)
+
+app.get('/', (req, res) => {
+    return res.redirect('/home');
+})
 
 app.use(errorHandler)
 
