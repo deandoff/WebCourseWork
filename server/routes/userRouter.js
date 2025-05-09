@@ -6,6 +6,12 @@ const authMiddleware = require('../middleware/authMiddleware')
 router.get('/login', userController.loginPage);
 router.post('/login', userController.login);
 router.get('/home', userController.home);
+
+router.get('/home/teacher/:id', userController.getTeacherById);
+router.get('/home/group/:id/students', userController.getGroupStudents);
+router.get('/home/teacher/:id/schedule', userController.getTeacherSchedule);
+router.get('/home/group/:id/schedule', userController.getGroupSchedule);
+
 router.post('/logout', userController.logout);
 
 module.exports = router;

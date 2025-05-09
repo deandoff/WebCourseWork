@@ -21,6 +21,14 @@ hbs.registerHelper('eq', function (a, b) {
   return a === b;
 });
 
+hbs.registerHelper('or', function (a, b) {
+  return a || b;
+});
+
+hbs.registerHelper('and', function (a, b) {
+  return a && b;
+});
+
 hbs.registerHelper('formatTime', function (time) {
   return time.slice(0, 5);
 });
@@ -52,21 +60,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/', router)
 
 app.get('/', (req, res) => {
-    return res.redirect('/home');
+  return res.redirect('/home');
 })
 
 app.use(errorHandler)
 
 const start = async () => {
-    try {
-        await sequelize.authenticate()
-        await sequelize.sync()
-        app.listen(port, () => {
-            console.log(`Server running on port ${port}`)
-        })
-    } catch (error) {
-        console.error('Unable to connect to the database:', error)
-    }
+  try {
+    await sequelize.authenticate()
+    await sequelize.sync()
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`)
+    })
+  } catch (error) {
+    console.error('Unable to connect to the database:', error)
+  }
 }
 
 start()

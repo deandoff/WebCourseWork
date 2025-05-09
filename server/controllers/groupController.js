@@ -10,7 +10,7 @@ class GroupController {
     }
 
     // Рендер страницы управления группами
-    async GroupManagementPage(req, res) {
+    async GroupManagementPage(req, res) {z
         const groups = await Group.findAll()
         const students = await User.findAll({ where: { role: 'STUDENT' } })
         const studentGroups = await StudentGroup.findAll()
@@ -100,19 +100,19 @@ class GroupController {
     async GetStudentsWithoutGroup(req, res) {
         try {
             console.log('Запрос получен: Получение студентов без группы');
-    
+
             const allStudents = await User.findAll({ where: { role: 'STUDENT' } })
             console.log(`Найдено студентов со статусом STUDENT: ${allStudents.length}`);
-    
+
             const studentGroups = await StudentGroup.findAll()
             console.log(`Найдено записей StudentGroup: ${studentGroups.length}`);
-    
+
             const studentIdsWithGroup = studentGroups.map(sg => sg.student_id)
             console.log('ID студентов с группой:', studentIdsWithGroup)
-    
+
             const studentsWithoutGroup = allStudents.filter(student => !studentIdsWithGroup.includes(student.id))
             console.log(`Студентов без группы: ${studentsWithoutGroup.length}`)
-            
+
             console.log('Ответ отправляется:', JSON.stringify(studentsWithoutGroup, null, 2));
             res.json(studentsWithoutGroup)
         } catch (error) {
@@ -120,7 +120,7 @@ class GroupController {
             res.status(500).json({ message: 'Ошибка при получении студентов без группы' })
         }
     }
-    
+
 }
 
 module.exports = new GroupController()

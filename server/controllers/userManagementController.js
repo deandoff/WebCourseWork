@@ -1,36 +1,36 @@
-const {User} = require('../models/models')
+const { User } = require('../models/models')
 const Errors = require('../error/errors')
 const bcrypt = require('bcrypt')
 
 class UserManagementController {
     async createUser(req, res) {
-        const {username, password, fullname, email, role} = req.body
+        const { username, password, fullname, email, role } = req.body
         if (!username || !password || !fullname || !email || !role) {
-            return res.status(400).json({message: 'All fields are required'})
+            return res.status(400).json({ message: 'All fields are required' })
         }
-        const candidate = await User.findOne({where: {username}})
+        const candidate = await User.findOne({ where: { username } })
         if (candidate) {
-            return res.status(400).json({message: 'User already exists'})
+            return res.status(400).json({ message: 'User already exists' })
         }
         const hashPassword = await bcrypt.hash(password, 5)
-        const user = await User.create({username, password: hashPassword, fullname, email, role})
+        const user = await User.create({ username, password: hashPassword, fullname, email, role })
         return res.json(user)
     }
 
     async deleteUser(req, res) {
         const { id } = req.params;
         try {
-          const deletedUser = await User.destroy({ where: { id } });
-          if (!deletedUser) {
-            return res.status(404).json({ message: 'Пользователь не найден' });
-          }
-          return res.json({ message: 'Пользователь удалён' });
+            const deletedUser = await User.destroy({ where: { id } });
+            if (!deletedUser) {
+                return res.status(404).json({ message: 'Пользователь не найден' });
+            }
+            return res.json({ message: 'Пользователь удалён' });
         } catch (error) {
-          console.error('Ошибка при удалении:', error);
-          return res.status(500).json({ message: 'Ошибка сервера при удалении пользователя' });
+            console.error('Ошибка при удалении:', error);
+            return res.status(500).json({ message: 'Ошибка сервера при удалении пользователя' });
         }
-      }
-      
+    }
+
 
     async updateUser(req, res) {
         const { id, username, password, fullname, email, role } = req.body;
@@ -55,7 +55,7 @@ class UserManagementController {
             return res.status(500).json({ message: 'Server error during update' });
         }
     }
-    
+
 
     async getAllUsers(req, res) {
         const users = await User.findAll()

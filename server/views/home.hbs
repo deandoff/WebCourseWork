@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Home</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
+
 <body>
   <div class="container center">
     <h2>Welcome, {{username}}</h2>
@@ -12,56 +15,285 @@
     <nav class="nav-buttons">
       <a href="/home" class="btn">Home</a>
       {{#if (eq role "ADMIN")}}
-        <a href="/admin" class="btn">User Management</a>
+      <a href="/admin" class="btn">User Management</a>
       {{/if}}
       {{#if (eq role "DEANARY")}}
-        <a href="/deanary/schedule" class="btn">Schedule Management</a>
-        <a href="/deanary/groups" class="btn">Groups Management</a>
+      <a href="/deanary/schedule" class="btn">Schedule Management</a>
+      <a href="/deanary/groups" class="btn">Groups Management</a>
       {{/if}}
       <form action="/logout" method="POST" style="display:inline;">
         <button type="submit" class="btn logout">Logout</button>
       </form>
     </nav>
 
+    {{#if (eq role "STUDENT")}}
+    <div class="info-box">
+      <h3>Ваша группа: {{currentGroup.name}}</h3>
+      <button class="btn" onclick="viewPersonDetails('group', {{currentGroup.id}})">Показать состав группы</button>
+    </div>
+    {{/if}}
+
+    {{#if (or (eq role "STUDENT") (eq role "TEACHER"))}}
+    <div class="schedule-controls">
+      <select id="teacherSelect">
+        <option value="">Выберите преподавателя</option>
+        {{#each teachers}}
+        <option value="{{this.id}}">{{this.fullname}}</option>
+        {{/each}}
+      </select>
+      <button class="btn" onclick="viewTeacherSchedule()">Показать расписание преподавателя</button>
+
+      <select id="groupSelect">
+        <option value="">Выберите группу</option>
+        {{#each groups}}
+        <option value="{{this.id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
+      <button class="btn" onclick="viewGroupSchedule()">Показать расписание группы</button>
+    </div>
+
+
     <div class="schedule">
+      <h2>Расписание</h2>
       {{#each (groupAndSortByDay schedule) as |dayGroup|}}
-        <h3>{{dayName dayGroup.day}}</h3>
-        <table class="schedule-table">
-          <thead>
-            <tr>
-              <th>Время</th>
-              <th>Дисциплина</th>
-              <th>Вид занятий</th>
-              <th>Аудитория</th>
-              <th>Здание</th>
-              {{#if (eq ../role "STUDENT")}}
-                <th>Преподаватель</th>
-              {{else}}
-                <th>Группа</th>
+      <h3>{{dayName dayGroup.day}}</h3>
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>Время</th>
+            <th>Дисциплина</th>
+            <th>Вид занятий</th>
+            <th>Аудитория</th>
+            <th>Здание</th>
+            <th>Преподаватель / Группа</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each dayGroup.entries}}
+          <tr>
+            <td>{{formatTime start_time}}</td>
+            <td>{{subject_name}}</td>
+            <td>{{subject_type}}</td>
+            <td>{{classroom.number}}</td>
+            <td>{{classroom.building}}</td>
+            <td>
+              {{#if teacher}}
+              {{teacher.fullname}}
+              <button class="btn" onclick="viewPersonDetails('teacher', {{teacher.id}})">Подробнее</button>
+              {{else if group}}
+              {{group.name}}
+              <button class="btn" onclick="viewPersonDetails('group', {{group.id}})">Подробнее</button>
               {{/if}}
-            </tr>
-          </thead>
-          <tbody>
-            {{#each dayGroup.entries}}
-              <tr>
-                <td>{{formatTime start_time}}</td>
-                <td>{{subject_name}}</td>
-                <td>{{subject_type}}</td>
-                <td>{{classroom.number}}</td>
-                <td>{{classroom.building}}</td>
-                <td>
-                  {{#if teacher}}
-                    {{teacher.fullname}}
-                  {{else}}
-                    {{group.name}}
-                  {{/if}}
-                </td>
-              </tr>
-            {{/each}}
-          </tbody>
-        </table>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
       {{/each}}
     </div>
+    {{/if}}
   </div>
+
+  <!-- Модальное окно для информации о преподавателе/группе -->
+  <div id="personModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closePersonModal()">&times;</span>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Модальное окно для расписания -->
+  <div id="scheduleModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeScheduleModal()">&times;</span>
+      <div id="scheduleModalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    function viewPersonDetails(type, id) {
+      if (type === 'teacher') {
+        $.get(`/home/teacher/${id}`)
+          .done(function (data) {
+            $('#modalBody').html(`
+              <h3>${data.fullname}</h3>
+              <table class="schedule-table">
+                <tr>
+                  <th>№</th>
+                  <th>Email</th>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>${data.email}</td>
+                </tr>
+              </table>
+            `);
+            $('#personModal').fadeIn(200);
+          })
+          .fail(function () {
+            $('#modalBody').html('<p>Ошибка при загрузке данных преподавателя</p>');
+            $('#personModal').fadeIn(200);
+          });
+      } else if (type === 'group') {
+        $.get(`/home/group/${id}/students`)
+          .done(function (data) {
+            const sorted = data.students.sort((a, b) => a.fullname.localeCompare(b.fullname));
+            let studentRows = sorted.map((student, index) => `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${student.fullname}</td>
+                <td>${student.email}</td>
+                <td>${student.id}</td>
+              </tr>
+            `).join('');
+            $('#modalBody').html(`
+              <h3>Группа: ${data.group_name}</h3>
+              <table class="schedule-table">
+                <thead>
+                  <tr>
+                    <th>№</th>
+                    <th>ФИО</th>
+                    <th>Email</th>
+                    <th>Номер зачетки</th>
+                  </tr>
+                </thead>
+                <tbody>${studentRows}</tbody>
+              </table>
+            `);
+            $('#personModal').fadeIn(200);
+          })
+          .fail(function () {
+            $('#modalBody').html('<p>Ошибка при загрузке данных группы</p>');
+            $('#personModal').fadeIn(200);
+          });
+      }
+    }
+
+    function closePersonModal() {
+      $('#personModal').fadeOut(200);
+    }
+
+    function viewTeacherSchedule() {
+      const teacherId = $('#teacherSelect').val();
+      if (!teacherId) return alert('Выберите преподавателя');
+
+      $.get(`/home/teacher/${teacherId}/schedule`)
+        .done(function (data) {
+          const grouped = groupAndSortByDay(data);
+          let scheduleHtml = '';
+          const teacherName = $('#teacherSelect option:selected').text() || 'Неизвестный преподаватель'; // Получаем имя группы
+          scheduleHtml += `<h2>Расписание преподавателя: ${teacherName}</h2>`;
+
+          grouped.forEach(dayGroup => {
+            scheduleHtml += `<h3>${dayName(dayGroup.day)}</h3>`;
+            scheduleHtml += `<table class="schedule-table"><thead><tr>
+              <th>Время</th><th>Дисциплина</th><th>Группа</th><th>Аудитория</th>
+            </tr></thead><tbody>`;
+
+            dayGroup.entries.forEach(entry => {
+              scheduleHtml += `<tr>
+                <td>${formatTime(entry.start_time)} - ${formatTime(entry.end_time)}</td>
+                <td>${entry.subject_name} (${entry.subject_type})</td>
+                <td>${entry.group_name} (${entry.group_course} курс)</td>
+                <td>${entry.classroom_building}-${entry.classroom_number}</td>
+              </tr>`;
+            });
+
+            scheduleHtml += `</tbody></table>`;
+          });
+
+          $('#scheduleModalBody').html(scheduleHtml);
+          $('#scheduleModal').fadeIn(200);
+        })
+        .fail(function () {
+          $('#scheduleModalBody').html('<p>Ошибка при загрузке расписания преподавателя</p>');
+          $('#scheduleModal').fadeIn(200);
+        });
+    }
+
+    function viewGroupSchedule() {
+      const groupId = $('#groupSelect').val();
+      if (!groupId) return alert('Выберите группу');
+
+      $.get(`/home/group/${groupId}/schedule`)
+        .done(function (data) {
+
+          // Проверим, если в данных есть хотя бы один элемент
+          if (data.length === 0) {
+            const groupName = $('#groupSelect option:selected').text() || 'Неизвестная группа'; // Получаем имя группы
+            $('#scheduleModalBody').html(`<h2>Расписание группы: ${groupName}</h2><p>Расписание не найдено для этой группы</p>`);
+            $('#scheduleModal').fadeIn(200);
+            return;
+          }
+
+          const groupName = data[0].group_name || 'Неизвестная группа';
+          let scheduleHtml = `<h2>Расписание группы: ${groupName}</h2>`;
+
+          // Группировка данных по дням недели
+          const grouped = groupAndSortByDay(data);
+
+          // Обработка каждого дня
+          grouped.forEach(dayGroup => {
+            scheduleHtml += `<h3>${dayName(dayGroup.day)}</h3>`;
+            scheduleHtml += `<table class="schedule-table"><thead><tr>
+              <th>Время</th><th>Дисциплина</th><th>Преподаватель</th><th>Аудитория</th>
+            </tr></thead><tbody>`;
+
+            // Добавляем занятия для каждого дня
+            dayGroup.entries.forEach(entry => {
+              scheduleHtml += `<tr>
+                <td>${formatTime(entry.start_time)} - ${formatTime(entry.end_time)}</td>
+                <td>${entry.subject_name} (${entry.subject_type})</td>
+                <td>${entry.teacher_fullname}</td>
+                <td>${entry.classroom_building}-${entry.classroom_number}</td>
+              </tr>`;
+            });
+
+            scheduleHtml += `</tbody></table>`;
+          });
+
+          // Заполняем модальное окно
+          $('#scheduleModalBody').html(scheduleHtml);
+          $('#scheduleModal').fadeIn(200);
+        })
+        .fail(function () {
+          $('#scheduleModalBody').html('<p>Ошибка при загрузке расписания группы</p>');
+          $('#scheduleModal').fadeIn(200);
+        });
+    }
+
+    function closeScheduleModal() {
+      $('#scheduleModal').fadeOut(200);
+    }
+
+    function groupAndSortByDay(schedule) {
+      const days = {};
+      schedule.forEach(entry => {
+        if (!days[entry.day_of_week]) {
+          days[entry.day_of_week] = [];
+        }
+        days[entry.day_of_week].push(entry);
+      });
+
+      Object.keys(days).forEach(day => {
+        days[day].sort((a, b) => a.start_time.localeCompare(b.start_time));
+      });
+
+      return Object.keys(days).map(day => ({
+        day: parseInt(day),
+        entries: days[day]
+      })).sort((a, b) => a.day - b.day);
+    }
+
+    function dayName(day) {
+      const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+      return days[day - 1] || day;
+    }
+
+    function formatTime(time) {
+      return time ? time.substring(0, 5) : '';
+    }
+  </script>
 </body>
+
 </html>

@@ -1,0 +1,102 @@
+/* Общие стили для body */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  flex-direction: column;
+  /* Позволяет располагать элементы вертикально */
+  text-align: center;
+}
+
+/* Стиль для заголовка */
+h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 30px;
+  /* Увеличиваем отступ снизу, чтобы заголовок был выше формы */
+}
+
+/* Контейнер формы */
+form {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Входная ошибка (если есть) */
+div {
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  background-color: #fff;
+  text-align: center;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #a21010;
+}
+
+/* Поля ввода */
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* Фокус на полях ввода */
+input[type="text"]:focus,
+input[type="password"]:focus {
+  border-color: #007BFF;
+  outline: none;
+}
+
+/* Кнопка входа */
+button[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+/* Эффект при наведении на кнопку */
+button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+/* Мобильная адаптивность */
+@media (max-width: 480px) {
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  form {
+    width: 80%;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    font-size: 0.9rem;
+  }
+
+  button[type="submit"] {
+    font-size: 0.9rem;
+  }
+}
