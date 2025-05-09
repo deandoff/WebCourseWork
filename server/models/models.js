@@ -40,8 +40,8 @@ const Schedule = sequelize.define('schedule', {
     end_time: {type: DataTypes.TIME},
 })
 
-Schedule.belongsTo(User, { foreignKey: 'teacher_id' });
-User.hasMany(Schedule, { foreignKey: 'teacher_id' });
+Schedule.belongsTo(User, { foreignKey: 'teacher_id', as: 'teacher' });
+User.hasMany(Schedule, { foreignKey: 'teacher_id', as: 'teacherSchedules' });
 
 Schedule.belongsTo(Group, { foreignKey: 'group_id' });
 Group.hasMany(Schedule, { foreignKey: 'group_id' });

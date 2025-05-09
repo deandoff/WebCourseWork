@@ -1,6 +1,6 @@
 const e = require('express')
 const Errors = require('../error/errors')
-const {User} = require('../models/models')
+const { Schedule, Group, Classroom, User, StudentGroup } = require('../models/models')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 require('dotenv').config();
@@ -67,14 +67,46 @@ class UserController {
       async home(req, res) {
         const token = req.cookies.token;
         if (!token) return res.redirect('/login');
-    
+
         try {
           const decoded = jwt.verify(token, process.env.SECRET_KEY);
+          const { username, role, id: userId } = decoded;
+
+          let schedule = [];
+
+          if (role === 'TEACHER') {
+            schedule = await Schedule.findAll({
+              where: { teacher_id: userId },
+              include: [
+                { model: Group },
+                { model: Classroom }
+              ],
+              order: [['day_of_week', 'ASC'], ['start_time', 'ASC']]
+            });
+          }
+
+          if (role === 'STUDENT') {
+            const studentGroup = await StudentGroup.findOne({ where: { student_id: userId } });
+
+            if (studentGroup) {
+              schedule = await Schedule.findAll({
+                where: { group_id: studentGroup.id },
+                include: [
+                  { model: User, as: 'teacher' }, // добавь alias при определении связи!
+                  { model: Classroom }
+                ],
+                order: [['day_of_week', 'ASC'], ['start_time', 'ASC']]
+              });
+            }
+          }
+
           res.render('home', {
-            username: decoded.username,
-            role: decoded.role,
+            username,
+            role,
+            schedule // теперь доступно в шаблоне
           });
         } catch (err) {
+          console.error('JWT error:', err);
           return res.redirect('/login');
         }
       }

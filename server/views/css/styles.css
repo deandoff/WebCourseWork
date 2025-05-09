@@ -1,141 +1,176 @@
+/* Общие стили */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f7fa;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .container {
-    max-width: 1000px;
-    margin: 40px auto;
-    background-color: #fff;
-    padding: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-radius: 10px;
-  }
-  
-  h2 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-  }
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f4f6f9;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
 
-  h3 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-  }
-  
-  .user-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .user-table th,
-  .user-table td {
-    padding: 12px 16px;
-    border: 1px solid #e0e0e0;
-    text-align: left;
-  }
-  
-  .user-table th {
-    background-color: #f0f0f0;
-    color: #444;
-    font-weight: 600;
-  }
-  
-  .user-table tr:nth-child(even) {
-    background-color: #fafafa;
-  }
-  
-  .action-buttons {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .action-buttons form {
-    display: inline;
-  }
-  
-  button {
-    padding: 8px 14px;
-    font-size: 14px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  button.edit {
-    background-color: #3498db;
-    color: white;
-  }
-  
-  button.edit:hover {
-    background-color: #2980b9;
-  }
-  
-  button.delete {
-    background-color: #e74c3c;
-    color: white;
-  }
-  
-  button.delete:hover {
-    background-color: #c0392b;
-  }
-  
-  .center {
-    text-align: center;
-  }
-  
-  .role {
-    font-size: 18px;
-    margin-bottom: 30px;
-    color: #555;
-  }
-  
-  .logout {
-    background-color: #636e72;
-    color: white;
-    font-size: 14px;
-    padding: 10px 20px;
-    border-radius: 6px;
-    transition: background-color 0.2s ease;
-  }
+.container {
+  max-width: 1200px;
+  margin: auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.05);
+}
 
+h2, h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
 
-  .nav-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-  
-  .btn {
-    background-color: #0984e3;
-    color: white;
-    padding: 10px 18px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    transition: background-color 0.2s ease;
-    border: none;
-    display: inline-block;
-  }
-  
-  .btn:hover {
-    background-color: #74b9ff;
-    cursor: pointer;
-  }
-  
-  .logout {
-    background-color: #d63031;
-  }
-  
-  .logout:hover {
-    background-color: #ff7675;
-  }
-  
-  
+/* Таблицы */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+table th,
+table td {
+  text-align: left;
+  padding: 10px 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+table th {
+  background-color: #f0f3f7;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+table tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Кнопки */
+.btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+  text-decoration: none;
+  color: #fff;
+  display: inline-block;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.btn.save {
+  background-color: #2ecc71;
+}
+
+.btn.save:hover {
+  background-color: #27ae60;
+}
+
+.btn.edit {
+  background-color: #3498db;
+}
+
+.btn.edit:hover {
+  background-color: #2980b9;
+}
+
+.btn.delete {
+  background-color: #e74c3c;
+}
+
+.btn.delete:hover {
+  background-color: #c0392b;
+}
+
+.btn.logout {
+  background-color: #95a5a6;
+}
+
+.btn.logout:hover {
+  background-color: #7f8c8d;
+}
+
+.btn.add-student {
+  background-color: #9b59b6;
+}
+
+.btn.add-student:hover {
+  background-color: #8e44ad;
+}
+
+/* Формы */
+form {
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="time"],
+select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+/* Центрирование */
+.center {
+  text-align: center;
+}
+
+/* Навигация */
+.nav-buttons {
+  margin-top: 20px;
+}
+
+.nav-buttons .btn {
+  background-color: #34495e;
+}
+
+.nav-buttons .btn:hover {
+  background-color: #2c3e50;
+}
+
+/* Расписание */
+.schedule h3 {
+  margin-top: 30px;
+  color: #34495e;
+}
+
+.schedule-table th,
+.schedule-table td {
+  padding: 10px;
+}
+
+.schedule-table th {
+  background-color: #ecf0f1;
+}
+
+/* Анимация появления */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}

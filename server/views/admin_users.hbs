@@ -5,64 +5,12 @@
   <title>Управление пользователями</title>
   <link rel="stylesheet" href="/css/styles.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <style>
-    .edit-form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
-
-    .edit-form .form-group {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .edit-form .form-group label {
-      margin-bottom: 4px;
-      font-weight: bold;
-    }
-
-    .edit-form input,
-    .edit-form select {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .edit-form .form-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .edit-form .btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .edit-form .btn.save {
-      background-color: #4CAF50;
-      color: white;
-    }
-
-    .edit-form .btn.cancel {
-      background-color: #f44336;
-      color: white;
-    }
-  </style>
 </head>
 <body>
 <div class="container">
   <h2>Управление пользователями</h2>
 
   <button onclick="openCreateUserForm()" class="btn save" style="margin-bottom: 10px;">Создать пользователя</button>
-
 
   <table class="user-table">
     <thead>

@@ -21,6 +21,30 @@ hbs.registerHelper('eq', function (a, b) {
   return a === b;
 });
 
+hbs.registerHelper('formatTime', function (time) {
+  return time.slice(0, 5);
+});
+
+hbs.registerHelper('dayName', function (day) {
+  const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+  return days[day - 1] || 'Неизвестно';
+});
+
+hbs.registerHelper('groupAndSortByDay', function (schedule) {
+  const grouped = {};
+
+  schedule.forEach(item => {
+    const day = item.day_of_week;
+    if (!grouped[day]) grouped[day] = [];
+    grouped[day].push(item);
+  });
+
+  return Object.entries(grouped).map(([day, entries]) => ({
+    day: Number(day),
+    entries: entries.sort((a, b) => a.start_time.localeCompare(b.start_time))
+  })).sort((a, b) => a.day - b.day);
+});
+
 app.use(cookieParser());
 app.use(cors())
 app.use(express.json())
