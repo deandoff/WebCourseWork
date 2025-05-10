@@ -94,7 +94,6 @@
     {{/if}}
   </div>
 
-  <!-- Модальное окно для информации о преподавателе/группе -->
   <div id="personModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closePersonModal()">&times;</span>
@@ -102,7 +101,6 @@
     </div>
   </div>
 
-  <!-- Модальное окно для расписания -->
   <div id="scheduleModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeScheduleModal()">&times;</span>
@@ -217,10 +215,8 @@
 
       $.get(`/home/group/${groupId}/schedule`)
         .done(function (data) {
-
-          // Проверим, если в данных есть хотя бы один элемент
           if (data.length === 0) {
-            const groupName = $('#groupSelect option:selected').text() || 'Неизвестная группа'; // Получаем имя группы
+            const groupName = $('#groupSelect option:selected').text() || 'Неизвестная группа';
             $('#scheduleModalBody').html(`<h2>Расписание группы: ${groupName}</h2><p>Расписание не найдено для этой группы</p>`);
             $('#scheduleModal').fadeIn(200);
             return;
@@ -229,17 +225,14 @@
           const groupName = data[0].group_name || 'Неизвестная группа';
           let scheduleHtml = `<h2>Расписание группы: ${groupName}</h2>`;
 
-          // Группировка данных по дням недели
           const grouped = groupAndSortByDay(data);
 
-          // Обработка каждого дня
           grouped.forEach(dayGroup => {
             scheduleHtml += `<h3>${dayName(dayGroup.day)}</h3>`;
             scheduleHtml += `<table class="schedule-table"><thead><tr>
               <th>Время</th><th>Дисциплина</th><th>Преподаватель</th><th>Аудитория</th>
             </tr></thead><tbody>`;
 
-            // Добавляем занятия для каждого дня
             dayGroup.entries.forEach(entry => {
               scheduleHtml += `<tr>
                 <td>${formatTime(entry.start_time)} - ${formatTime(entry.end_time)}</td>
@@ -252,7 +245,6 @@
             scheduleHtml += `</tbody></table>`;
           });
 
-          // Заполняем модальное окно
           $('#scheduleModalBody').html(scheduleHtml);
           $('#scheduleModal').fadeIn(200);
         })

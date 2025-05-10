@@ -14,7 +14,7 @@ router.get('/schedule/:id', deanaryController.GetScheduleById)
 
 router.get('/groups', gropController.GroupManagementPage)
 router.post('/groups/create', gropController.CreateGroup)
-// router.put('/groups/update', gropController.UpdateGroup)
+router.put('/groups/update', gropController.UpdateGroup)
 router.delete('/groups/delete/:id', gropController.DeleteGroup)
 
 router.get('/groups/no-group', gropController.GetStudentsWithoutGroup)

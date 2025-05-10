@@ -74,12 +74,11 @@ class UserController {
       const { username, role, id: userId } = decoded;
 
       let schedule = [];
-      let teachers = []; // Инициализация переменной для преподавателей
+      let teachers = [];
       let currentGroup = null;
       const groups = await Group.findAll({ attributes: ['id', 'name'] });
 
       if (role === 'TEACHER') {
-        // Если пользователь преподаватель, то загружаем его расписание
         schedule = await Schedule.findAll({
           where: { teacher_id: userId },
           include: [
@@ -91,7 +90,6 @@ class UserController {
       }
 
       if (role === 'STUDENT') {
-        // Если пользователь студент, то ищем его группу и соответствующее расписание
         const studentGroup = await StudentGroup.findOne({ where: { student_id: userId } });
 
         if (studentGroup) {
@@ -105,15 +103,12 @@ class UserController {
             order: [['day_of_week', 'ASC'], ['start_time', 'ASC']]
           });
 
-          // Для студента также нужно получить список преподавателей
           teachers = await User.findAll({
             where: { role: 'TEACHER' },
-            attributes: ['id', 'fullname'] // Можно добавить другие поля, если нужно
+            attributes: ['id', 'fullname']
           });
         }
       }
-
-      // Рендерим страницу с переданными данными
       res.render('home', {
         username,
         role,
@@ -128,14 +123,11 @@ class UserController {
     }
   }
 
-
-
   async check(req, res) {
     const token = generateJWT(req.user.id, req.user.username, req.user.role)
     return res.json({ token })
   }
 
-  // Получить инфо о преподавателе
   async getTeacherById(req, res, next) {
     try {
       const teacher = await User.findOne({
@@ -154,7 +146,6 @@ class UserController {
     }
   }
 
-  // Получить расписание преподавателя
   async getTeacherSchedule(req, res, next) {
     try {
       console.log(`Запрос расписания для преподавателя с ID: ${req.params.id}`);
@@ -162,13 +153,12 @@ class UserController {
       const schedule = await Schedule.findAll({
         where: { teacher_id: req.params.id },
         include: [
-          { model: Group, attributes: ['name', 'course'] },  // Указываем, какие поля из Group нужно включить
-          { model: Classroom, attributes: ['building', 'number'] }  // Указываем, какие поля из Classroom нужно включить
+          { model: Group, attributes: ['name', 'course'] },
+          { model: Classroom, attributes: ['building', 'number'] }
         ],
         order: [['day_of_week', 'ASC'], ['start_time', 'ASC']]
       });
 
-      // Преобразуем расписание в более удобный формат для фронта
       const simplifiedSchedule = schedule.map(item => {
         return {
           id: item.id,
@@ -184,7 +174,7 @@ class UserController {
         };
       });
 
-      console.log(simplifiedSchedule); // Логируем преобразованное расписание
+      console.log(simplifiedSchedule);
 
       res.json(simplifiedSchedule);
     } catch (err) {
@@ -193,8 +183,6 @@ class UserController {
     }
   }
 
-
-  // Получить расписание группы
   async getGroupSchedule(req, res, next) {
     try {
       const schedule = await Schedule.findAll({
@@ -207,7 +195,6 @@ class UserController {
         order: [['day_of_week', 'ASC'], ['start_time', 'ASC']]
       });
 
-      // Логирование данных преподавателя
       console.log(schedule);
 
       const simplifiedSchedule = schedule.map(item => ({
@@ -217,7 +204,7 @@ class UserController {
         day_of_week: item.day_of_week,
         start_time: item.start_time,
         end_time: item.end_time,
-        teacher_fullname: item.teacher ? item.teacher.fullname : 'Неизвестен', // Проверка на наличие преподавателя
+        teacher_fullname: item.teacher ? item.teacher.fullname : 'Неизвестен',
         classroom_building: item.classroom.building,
         classroom_number: item.classroom.number,
         group_name: item.group ? item.group.name : 'Неизвестная группа'
@@ -230,8 +217,6 @@ class UserController {
     }
   }
 
-
-  // Получить студентов группы
   async getGroupStudents(req, res, next) {
     try {
       const group = await Group.findByPk(req.params.id);

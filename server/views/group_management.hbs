@@ -13,10 +13,8 @@
   <div class="container">
     <h2>Управление группами и студентами</h2>
 
-    <!-- Форма для создания группы -->
     <button onclick="openCreateGroupForm()" class="btn save" style="margin-bottom: 10px;">Создать группу</button>
 
-    <!-- Таблица для отображения групп -->
     <table class="group-table">
       <thead>
         <tr>
@@ -43,14 +41,11 @@
       </tbody>
     </table>
 
-
-    <!-- Формы для редактирования группы и добавления студента в группу -->
     <div id="studentFormContainer"></div>
 
   </div>
 
   <script>
-    // Открыть форму создания группы
     function openCreateGroupForm() {
       cancelInlineEdit();
 
@@ -98,7 +93,6 @@
       });
     }
 
-    // Открыть форму редактирования группы
     function openEditGroupForm(button, id, name, course) {
       cancelInlineEdit();
 
@@ -134,7 +128,7 @@
         const formData = $(this).serialize();
 
         $.ajax({
-          url: '/admin/group/update',
+          url: '/deanary/groups/update',
           method: 'PUT',
           data: formData,
           success: function (response) {
@@ -148,12 +142,10 @@
       });
     }
 
-    // Отмена редактирования/создания
     function cancelInlineEdit() {
       $('.inline-edit-row').remove();
     }
 
-    // Удалить группу
     function deleteGroup(id) {
       const confirmation = confirm("Вы уверены, что хотите удалить эту группу?");
       if (!confirmation) return;
@@ -171,7 +163,6 @@
       });
     }
 
-    // Функция для отображения формы добавления студента в группу
     function showAddStudentForm(groupId) {
       console.log("Попытка загрузить студентов без группы для groupId:", groupId);
 
@@ -247,14 +238,9 @@
       });
     }
 
-    // Просмотр студентов в группе
-    // Функция для отображения студентов в группе
-    // Функция для отображения студентов в группе
     function viewStudentsInGroup(groupId) {
-      // Проверим, не открыт ли уже список студентов для этой группы
       const existingTable = $(`#studentsTable-${groupId}`);
       if (existingTable.length > 0) {
-        // Если таблица уже отображается, скрыть её
         existingTable.toggle();
         return;
       }
@@ -297,7 +283,6 @@
                 </tr>
             `;
 
-          // Вставляем таблицу студентов непосредственно после строки с группой
           $(`tr[data-group-id="${groupId}"]`).after(studentTable);
         },
         error: function (xhr, status, error) {
@@ -306,14 +291,10 @@
       });
     }
 
-    // Функция для сворачивания/разворачивания списка студентов
     function toggleStudentsTable(groupId) {
       $(`#studentsTable-${groupId}`).toggle();
     }
 
-
-
-    // Удалить студента из группы
     function removeStudentFromGroup(studentId, groupId) {
       $.ajax({
         url: '/deanary/groups/remove-student',

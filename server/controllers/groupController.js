@@ -2,15 +2,12 @@ const { Group, StudentGroup, User } = require('../models/models')
 const Errors = require('../error/errors')
 
 class GroupController {
-
-    // Получение всех групп
     async GetAllGroups(req, res) {
         const groups = await Group.findAll()
         res.json(groups)
     }
 
-    // Рендер страницы управления группами
-    async GroupManagementPage(req, res) {z
+    async GroupManagementPage(req, res) {
         const groups = await Group.findAll()
         const students = await User.findAll({ where: { role: 'STUDENT' } })
         const studentGroups = await StudentGroup.findAll()
@@ -22,8 +19,6 @@ class GroupController {
         })
     }
 
-
-    // Создание новой группы
     async CreateGroup(req, res) {
         const { name, course } = req.body
         if (!name || course == null) {
@@ -39,19 +34,42 @@ class GroupController {
         res.json(group)
     }
 
-    // Удаление группы
+    async UpdateGroup(req, res) {
+        const { id, name, course } = req.body
+        if (!id || !name || course == null) {
+            return res.status(400).json({ message: 'Group ID, name and course are required' })
+        }
+
+        const group = await Group.findOne({ where: { id } })
+        if (!group) {
+            return res.status(404).json({ message: 'Group not found' })
+        }
+
+        const existingGroup = await Group.findOne({ 
+            where: { name }
+        })
+        if (existingGroup) {
+            return res.status(400).json({ message: 'Такая группа уже существует' })
+        }
+
+        group.name = name
+        group.course = course
+        await group.save()
+
+        res.json(group)
+    }
+
     async DeleteGroup(req, res) {
         const { id } = req.body
         if (!id) {
             return res.status(400).json({ message: 'Group ID is required' })
         }
 
-        await StudentGroup.destroy({ where: { group_id: id } }) // Удаляем связи студентов
+        await StudentGroup.destroy({ where: { group_id: id } })
         const deleted = await Group.destroy({ where: { id } })
         res.json({ deleted })
     }
 
-    // Добавление студента в группу
     async AddStudentToGroup(req, res) {
         const { student_id, group_id } = req.body
         if (!student_id || !group_id) {
@@ -72,7 +90,6 @@ class GroupController {
         res.json(studentGroup)
     }
 
-    // Удаление студента из группы
     async RemoveStudentFromGroup(req, res) {
         const { student_id } = req.body
         if (!student_id) {
@@ -83,7 +100,6 @@ class GroupController {
         res.json({ deleted })
     }
 
-    // Получение студентов в группе (опционально)
     async GetStudentsInGroup(req, res) {
         const { group_id } = req.params
         if (!group_id) {

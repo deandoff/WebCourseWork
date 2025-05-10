@@ -193,7 +193,7 @@
         method: 'DELETE',
         success: function (response) {
           alert('Пользователь удалён');
-          $(`tr[data-user-id="${id}"]`).remove(); // Удаляем строку из таблицы
+          $(`tr[data-user-id="${id}"]`).remove();
         },
         error: function (xhr) {
           alert('Ошибка при удалении пользователя: ' + xhr.responseText);

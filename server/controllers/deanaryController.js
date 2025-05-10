@@ -95,19 +95,17 @@ class DeanaryController {
   }
 
   async GetScheduleById(req, res) {
-    const { id } = req.params; // Получаем ID из параметров запроса
+    const { id } = req.params;
     try {
-      const schedule = await Schedule.findByPk(id); // Находим расписание по ID
+      const schedule = await Schedule.findByPk(id);
       if (!schedule) {
         return res.status(404).json({ message: 'Расписание не найдено' });
       }
 
-      // Получаем подробности для связанных сущностей, если необходимо
       const teacher = await User.findByPk(schedule.teacher_id);
       const group = await Group.findByPk(schedule.group_id);z
       const classroom = await Classroom.findByPk(schedule.classroom_id);
 
-      // Создаем объект с подробной информацией
       const scheduleData = {
         ...schedule.dataValues,
         teacher_name: teacher ? teacher.fullname : '—',
