@@ -4,6 +4,7 @@
 <head>
   <title>Home</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
@@ -35,25 +36,24 @@
 
     {{#if (or (eq role "STUDENT") (eq role "TEACHER"))}}
     <div class="schedule-controls">
-      <select id="teacherSelect">
-        <option value="">Выберите преподавателя</option>
-        {{#each teachers}}
-        <option value="{{this.id}}">{{this.fullname}}</option>
-        {{/each}}
-      </select>
-      <button class="btn" onclick="viewTeacherSchedule()">Показать расписание преподавателя</button>
+      <div class="search-container">
+        <label for="teacherSearch">Поиск преподавателя:</label>
+        <input type="text" id="teacherSearch" placeholder="Начните вводить ФИО">
+        <button class="btn" onclick="viewTeacherSchedule()">Показать расписание</button>
+        <input type="hidden" id="teacherId">
+      </div>
 
-      <select id="groupSelect">
-        <option value="">Выберите группу</option>
-        {{#each groups}}
-        <option value="{{this.id}}">{{this.name}}</option>
-        {{/each}}
-      </select>
-      <button class="btn" onclick="viewGroupSchedule()">Показать расписание группы</button>
+      <div class="search-container">
+        <label for="groupSearch">Поиск группы:</label>
+        <input type="text" id="groupSearch" placeholder="Начните вводить название группы">
+        <button class="btn" onclick="viewGroupSchedule()">Показать расписание</button>
+        <input type="hidden" id="groupId">
+      </div>
+
+      <button class="btn" onclick="showDefaultSchedule()">Показать мое расписание</button>
     </div>
 
-
-    <div class="schedule">
+    <div class="schedule" id="scheduleContainer">
       <h2>Расписание</h2>
       {{#each (groupAndSortByDay schedule) as |dayGroup|}}
       <h3>{{dayName dayGroup.day}}</h3>
@@ -98,13 +98,6 @@
     <div class="modal-content">
       <span class="close" onclick="closePersonModal()">&times;</span>
       <div id="modalBody"></div>
-    </div>
-  </div>
-
-  <div id="scheduleModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeScheduleModal()">&times;</span>
-      <div id="scheduleModalBody"></div>
     </div>
   </div>
 
@@ -171,58 +164,97 @@
       $('#personModal').fadeOut(200);
     }
 
+    $(function () {
+      $("#teacherSearch").autocomplete({
+        source: function (request, response) {
+          $.get("/home/search/teachers", { term: request.term })
+            .done(function (data) {
+              response(data.map(teacher => {
+                return {
+                  label: teacher.fullname,
+                  value: teacher.fullname,
+                  id: teacher.id
+                };
+              }));
+            });
+        },
+        minLength: 2,
+        select: function (event, ui) {
+          $("#teacherId").val(ui.item.id);
+        }
+      });
+
+      $("#groupSearch").autocomplete({
+        source: function (request, response) {
+          $.get("/home/search/groups", { term: request.term })
+            .done(function (data) {
+              response(data.map(group => {
+                return {
+                  label: group.name,
+                  value: group.name,
+                  id: group.id
+                };
+              }));
+            });
+        },
+        minLength: 1,
+        select: function (event, ui) {
+          $("#groupId").val(ui.item.id);
+        }
+      });
+    });
+
+
     function viewTeacherSchedule() {
-      const teacherId = $('#teacherSelect').val();
+      const teacherId = $("#teacherId").val();
       if (!teacherId) return alert('Выберите преподавателя');
 
       $.get(`/home/teacher/${teacherId}/schedule`)
         .done(function (data) {
           const grouped = groupAndSortByDay(data);
           let scheduleHtml = '';
-          const teacherName = $('#teacherSelect option:selected').text() || 'Неизвестный преподаватель'; // Получаем имя группы
+
+          const teacherName = $("#teacherSearch").val() || 'Неизвестный преподаватель';
           scheduleHtml += `<h2>Расписание преподавателя: ${teacherName}</h2>`;
 
           grouped.forEach(dayGroup => {
             scheduleHtml += `<h3>${dayName(dayGroup.day)}</h3>`;
             scheduleHtml += `<table class="schedule-table"><thead><tr>
-              <th>Время</th><th>Дисциплина</th><th>Группа</th><th>Аудитория</th>
-            </tr></thead><tbody>`;
+          <th>Время</th><th>Дисциплина</th><th>Группа</th><th>Аудитория</th>
+        </tr></thead><tbody>`;
 
             dayGroup.entries.forEach(entry => {
               scheduleHtml += `<tr>
-                <td>${formatTime(entry.start_time)} - ${formatTime(entry.end_time)}</td>
-                <td>${entry.subject_name} (${entry.subject_type})</td>
-                <td>${entry.group_name} (${entry.group_course} курс)</td>
-                <td>${entry.classroom_building}-${entry.classroom_number}</td>
-              </tr>`;
+            <td>${formatTime(entry.start_time)} - ${formatTime(entry.end_time)}</td>
+            <td>${entry.subject_name} (${entry.subject_type})</td>
+            <td>${entry.group_name} (${entry.group_course} курс)</td>
+            <td>${entry.classroom_building}-${entry.classroom_number}</td>
+          </tr>`;
             });
 
             scheduleHtml += `</tbody></table>`;
           });
 
-          $('#scheduleModalBody').html(scheduleHtml);
-          $('#scheduleModal').fadeIn(200);
+          $('#scheduleContainer').html(scheduleHtml);
         })
         .fail(function () {
-          $('#scheduleModalBody').html('<p>Ошибка при загрузке расписания преподавателя</p>');
-          $('#scheduleModal').fadeIn(200);
+          $('#scheduleContainer').html('<p>Ошибка при загрузке расписания преподавателя</p>');
         });
     }
 
     function viewGroupSchedule() {
-      const groupId = $('#groupSelect').val();
+      const groupId = $("#groupId").val();
       if (!groupId) return alert('Выберите группу');
 
       $.get(`/home/group/${groupId}/schedule`)
         .done(function (data) {
           if (data.length === 0) {
-            const groupName = $('#groupSelect option:selected').text() || 'Неизвестная группа';
-            $('#scheduleModalBody').html(`<h2>Расписание группы: ${groupName}</h2><p>Расписание не найдено для этой группы</p>`);
-            $('#scheduleModal').fadeIn(200);
+            const groupName = $("#groupSearch").val() || 'Неизвестная группа';
+            $('#scheduleContainer').html(`<h2>Расписание группы: ${groupName}</h2><p>Расписание не найдено для этой группы</p>`);
             return;
           }
 
-          const groupName = data[0].group_name || 'Неизвестная группа';
+          const groupName = data[0]?.group_name || $("#groupSearch").val() || 'Неизвестная группа';
           let scheduleHtml = `<h2>Расписание группы: ${groupName}</h2>`;
 
           const grouped = groupAndSortByDay(data);
@@ -230,32 +262,30 @@
           grouped.forEach(dayGroup => {
             scheduleHtml += `<h3>${dayName(dayGroup.day)}</h3>`;
             scheduleHtml += `<table class="schedule-table"><thead><tr>
-              <th>Время</th><th>Дисциплина</th><th>Преподаватель</th><th>Аудитория</th>
-            </tr></thead><tbody>`;
+          <th>Время</th><th>Дисциплина</th><th>Преподаватель</th><th>Аудитория</th>
+        </tr></thead><tbody>`;
 
             dayGroup.entries.forEach(entry => {
               scheduleHtml += `<tr>
-                <td>${formatTime(entry.start_time)} - ${formatTime(entry.end_time)}</td>
-                <td>${entry.subject_name} (${entry.subject_type})</td>
-                <td>${entry.teacher_fullname}</td>
-                <td>${entry.classroom_building}-${entry.classroom_number}</td>
-              </tr>`;
+            <td>${formatTime(entry.start_time)} - ${formatTime(entry.end_time)}</td>
+            <td>${entry.subject_name} (${entry.subject_type})</td>
+            <td>${entry.teacher_fullname}</td>
+            <td>${entry.classroom_building}-${entry.classroom_number}</td>
+          </tr>`;
             });
 
             scheduleHtml += `</tbody></table>`;
           });
 
-          $('#scheduleModalBody').html(scheduleHtml);
-          $('#scheduleModal').fadeIn(200);
+          $('#scheduleContainer').html(scheduleHtml);
         })
         .fail(function () {
-          $('#scheduleModalBody').html('<p>Ошибка при загрузке расписания группы</p>');
-          $('#scheduleModal').fadeIn(200);
+          $('#scheduleContainer').html('<p>Ошибка при загрузке расписания группы</p>');
         });
     }
 
-    function closeScheduleModal() {
-      $('#scheduleModal').fadeOut(200);
+    function showDefaultSchedule() {
+      location.reload();
     }
 
     function groupAndSortByDay(schedule) {
@@ -286,6 +316,7 @@
       return time ? time.substring(0, 5) : '';
     }
   </script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 </body>
 
 </html>

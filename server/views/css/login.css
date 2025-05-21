@@ -8,7 +8,6 @@ body {
   height: 100vh;
   margin: 0;
   flex-direction: column;
-  /* Позволяет располагать элементы вертикально */
   text-align: center;
 }
 
@@ -17,7 +16,6 @@ h2 {
   font-size: 2rem;
   color: #333;
   margin-bottom: 30px;
-  /* Увеличиваем отступ снизу, чтобы заголовок был выше формы */
 }
 
 /* Контейнер формы */
@@ -79,24 +77,4 @@ button[type="submit"] {
 /* Эффект при наведении на кнопку */
 button[type="submit"]:hover {
   background-color: #0056b3;
-}
-
-/* Мобильная адаптивность */
-@media (max-width: 480px) {
-  h2 {
-    font-size: 1.5rem;
-  }
-
-  form {
-    width: 80%;
-  }
-
-  input[type="text"],
-  input[type="password"] {
-    font-size: 0.9rem;
-  }
-
-  button[type="submit"] {
-    font-size: 0.9rem;
-  }
 }

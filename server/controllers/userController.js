@@ -3,6 +3,7 @@ const Errors = require('../error/errors')
 const { Schedule, Group, Classroom, User, StudentGroup } = require('../models/models')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const { Op } = require('sequelize');
 require('dotenv').config();
 
 const generateJWT = (id, username, role) => {
@@ -143,6 +144,45 @@ class UserController {
     } catch (err) {
       console.error('Ошибка при получении преподавателя:', err);
       next(Errors.internal('Ошибка при получении преподавателя'));
+    }
+  }
+
+  async searchTeacher(req, res, next) {
+    try {
+      const searchTerm = req.query.term;
+      const teachers = await User.findAll({
+        where: {
+          role: 'TEACHER',
+          fullname: {
+            [Op.iLike]: `%${searchTerm}%`
+          }
+        },
+        limit: 10,
+        attributes: ['id', 'fullname']
+      });
+      res.json(teachers);
+    } catch (err) {
+      console.error('Ошибка при поиске преподавателей:', err);
+      next(Errors.internal('Ошибка при поиске преподавателей'));
+    }
+  }
+
+  async searchGroup(req, res, next) {
+    try {
+      const searchTerm = req.query.term;
+      const groups = await Group.findAll({
+        where: {
+          name: {
+            [Op.iLike]: `%${searchTerm}%`
+          }
+        },
+        limit: 10,
+        attributes: ['id', 'name']
+      });
+      res.json(groups);
+    } catch (err) {
+      console.error('Ошибка при поиске групп:', err);
+      next(Errors.internal('Ошибка при поиске групп'));
     }
   }
 
